@@ -1,0 +1,36 @@
+# See https://help.github.com/ignore-files/ for more about ignoring files.
+# production
+/install/files
+/docker/data
+application/config/database.php
+index.php
+
+# misc
+.DS_Store
+.vscode
+
+/vendor/
+/application/vendor/
+
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+!blank/.gitkeep
+desktop.ini
+
+application/vendor/
+vendor/
+.idea/
+.php_cs.cache
+.php-cs-fixer.cache
+application/logs/*
+ci_sessions/
+
+uploads
+/nbproject/private/
+application/config/database.php
+index.php
+nbproject/project.xml
+nbproject/project.properties
