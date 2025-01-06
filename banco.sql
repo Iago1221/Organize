@@ -20,30 +20,67 @@ CREATE TABLE IF NOT EXISTS `ci_sessions` (
 -- Table `clientes`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `clientes` (
-  `idClientes` INT(11) NOT NULL AUTO_INCREMENT,
-  `asaas_id` VARCHAR(255) DEFAULT NULL,
-  `nomeCliente` VARCHAR(255) NOT NULL,
-  `sexo` VARCHAR(20) NULL,
-  `pessoa_fisica` BOOLEAN NOT NULL DEFAULT 1,
-  `documento` VARCHAR(20) NOT NULL,
-  `telefone` VARCHAR(20) NOT NULL,
-  `celular` VARCHAR(20) NULL DEFAULT NULL,
-  `email` VARCHAR(100) NOT NULL,
-  `senha` VARCHAR(200) NOT NULL,
-  `dataCadastro` DATE NULL DEFAULT NULL,
-  `rua` VARCHAR(70) NULL DEFAULT NULL,
-  `numero` VARCHAR(15) NULL DEFAULT NULL,
-  `bairro` VARCHAR(45) NULL DEFAULT NULL,
-  `cidade` VARCHAR(45) NULL DEFAULT NULL,
-  `estado` VARCHAR(20) NULL DEFAULT NULL,
-  `cep` VARCHAR(20) NULL DEFAULT NULL,
-  `contato` varchar(45) DEFAULT NULL,
-  `complemento` varchar(45) DEFAULT NULL,
-  `fornecedor` BOOLEAN NOT NULL DEFAULT 0,
-  PRIMARY KEY (`idClientes`))
+  `idClientes` int NOT NULL AUTO_INCREMENT,
+  `asaas_id` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nomeCliente` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `sexo` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `pessoa_fisica` tinyint(1) NOT NULL DEFAULT '1',
+  `documento` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
+  `telefone` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
+  `celular` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `senha` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
+  `dataCadastro` date DEFAULT NULL,
+  `rua` varchar(70) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `numero` varchar(15) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bairro` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cidade` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `estado` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cep` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `contato` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `complemento` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `fornecedor` tinyint(1) NOT NULL DEFAULT '0',
+  `ibge` int DEFAULT NULL,
+  PRIMARY KEY (`idClientes`)
+)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+CREATE TABLE `nota_fiscal` (
+  `numero` int NOT NULL,
+  `serie` int NOT NULL,
+  `venda` int DEFAULT NULL,
+  `situacao` smallint NOT NULL DEFAULT '1',
+  `chave` varchar(225) DEFAULT NULL,
+  `protocolo` varchar(40) DEFAULT NULL,
+  `xml_path` varchar(255) DEFAULT NULL,
+  `recibo` varchar(25) DEFAULT NULL,
+  PRIMARY KEY (`numero`,`serie`)
+);
+
+CREATE TABLE nota_fiscal_envio (
+    id INT NOT NULL AUTO_INCREMENT,
+    numero INT NOT NULL,
+    codigo_retorno VARCHAR(50) NOT NULL,
+    motivo TEXT NOT NULL,
+    recibo VARCHAR(100) NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT `fk_nota_fiscal_envio`
+    FOREIGN KEY (`numero`)
+    REFERENCES `nota_fiscal` (`numero`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+);
+
+CREATE TABLE sefaz (
+    id INT AUTO_INCREMENT PRIMARY KEY, 
+    ambiente SMALLINT NOT NULL, 
+    uf VARCHAR(10) NOT NULL, 
+    data_alteracao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO sefaz (ambiente, uf) VALUES (2, 42);
 
 CREATE TABLE `resets_de_senha` ( 
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -258,17 +295,21 @@ DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 -- Table `produtos`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `produtos` (
-  `idProdutos` INT(11) NOT NULL AUTO_INCREMENT,
-  `codDeBarra` VARCHAR(70) NOT NULL,
-  `descricao` VARCHAR(80) NOT NULL,
-  `unidade` VARCHAR(10) NULL DEFAULT NULL,
-  `precoCompra` DECIMAL(10,2) NULL DEFAULT NULL,
-  `precoVenda` DECIMAL(10,2) NOT NULL,
-  `estoque` INT(11) NOT NULL,
-  `estoqueMinimo` INT(11) NULL DEFAULT NULL,
-  `saida`	TINYINT(1) NULL DEFAULT NULL,
-  `entrada`	TINYINT(1) NULL DEFAULT NULL,
-  PRIMARY KEY (`idProdutos`))
+  `idProdutos` int NOT NULL AUTO_INCREMENT,
+  `codDeBarra` varchar(70) COLLATE utf8mb4_general_ci NOT NULL,
+  `descricao` varchar(80) COLLATE utf8mb4_general_ci NOT NULL,
+  `unidade` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `precoCompra` decimal(10,2) DEFAULT NULL,
+  `precoVenda` decimal(10,2) NOT NULL,
+  `estoque` int NOT NULL,
+  `estoqueMinimo` int DEFAULT NULL,
+  `saida` tinyint(1) DEFAULT NULL,
+  `entrada` tinyint(1) DEFAULT NULL,
+  `cfop` int NOT NULL,
+  `ean` int NOT NULL,
+  `ncm` varchar(25) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  PRIMARY KEY (`idProdutos`)
+)
 ENGINE = InnoDB
 AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
@@ -574,20 +615,26 @@ DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 -- Table `emitente`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `emitente` (
-  `id` INT NOT NULL AUTO_INCREMENT ,
-  `nome` VARCHAR(255) NULL ,
-  `cnpj` VARCHAR(45) NULL ,
-  `ie` VARCHAR(50) NULL ,
-  `rua` VARCHAR(70) NULL ,
-  `numero` VARCHAR(15) NULL ,
-  `bairro` VARCHAR(45) NULL ,
-  `cidade` VARCHAR(45) NULL ,
-  `uf` VARCHAR(20) NULL ,
-  `telefone` VARCHAR(20) NULL ,
-  `email` VARCHAR(255) NULL ,
-  `url_logo` VARCHAR(225) NULL ,
-  `cep` VARCHAR(20) NULL ,
-  PRIMARY KEY (`id`) )
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nome` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cnpj` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ie` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `rua` varchar(70) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `numero` varchar(15) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bairro` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cidade` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `uf` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `telefone` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `url_logo` varchar(225) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cep` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `url_certificado` varchar(225) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `senha_certificado` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `regime_tributario` smallint DEFAULT NULL,
+  `path_certificado` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ibge` int DEFAULT NULL,
+  PRIMARY KEY (`id`)
+)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
